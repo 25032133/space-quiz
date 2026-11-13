@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ff">
+  <title>Orbit Academy — Space Exploration Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f5f4ff;
+      --card: rgba(255, 255, 255, .88);
+      --card-solid: #fff;
+      --ink: #211d3b;
+      --muted: #77748e;
+      --line: #e9e7f2;
+      --accent: #7357e8;
+      --accent-dark: #5e43d0;
+      --accent-soft: #f0edff;
+      --correct: #16835d;
+      --correct-bg: #e7f8ef;
+      --wrong: #c34a62;
+      --wrong-bg: #fff0f2;
+      --shadow: 0 24px 70px rgba(48, 37, 102, .11);
+      --display-fill: #f7fbff;
+      --display-grid: rgba(37, 103, 166, .08);
+      --display-border: #d6e5f2;
+      --display-accent: #286f9e;
+      --display-glow: rgba(113, 190, 232, .18);
+      --hex-opacity: .12;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --page: #111020;
+      --card: rgba(29, 27, 49, .92);
+      --card-solid: #211f36;
+      --ink: #f4f1ff;
+      --muted: #aaa6c1;
+      --line: #39364f;
+      --accent: #a48cff;
+      --accent-dark: #9075f1;
+      --accent-soft: #302a4c;
+      --correct: #71d5aa;
+      --correct-bg: #183a32;
+      --wrong: #ff91a4;
+      --wrong-bg: #442832;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .3);
+      --display-fill: #171f32;
+      --display-grid: rgba(133, 197, 232, .10);
+      --display-border: #35485f;
+      --display-accent: #92d8ff;
+      --display-glow: rgba(80, 161, 213, .19);
+      --hex-opacity: .14;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 48px 20px;
+      display: grid;
+      place-items: center;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 12% 12%, rgba(181, 163, 255, .20), transparent 34%),
+        radial-gradient(ellipse at 88% 84%, rgba(255, 190, 216, .20), transparent 32%),
+        var(--page);
+      font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      transition: background-color .25s ease, color .25s ease;
+    }
+
+    body::before {
+      position: fixed;
+      z-index: 0;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='69.28' height='60' viewBox='0 0 69.28 60'%3E%3Cg fill='none' stroke='%238f86c8' stroke-opacity='.3' stroke-width='1'%3E%3Cpath d='M17.32 0 34.64 10 34.64 30 17.32 40 0 30 0 10z M51.96 0 69.28 10 69.28 30 51.96 40 34.64 30 34.64 10z M34.64 30 51.96 40 51.96 60 34.64 70 17.32 60 17.32 40z'/%3E%3C/g%3E%3Cg fill='%23c9bbff' fill-opacity='.5'%3E%3Ccircle cx='58' cy='54' r='.8'/%3E%3Ccircle cx='8' cy='54' r='.6'/%3E%3Ccircle cx='44' cy='5' r='.6'/%3E%3C/g%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 138.56px 120px;
+      content: "";
+      opacity: var(--hex-opacity);
+      pointer-events: none;
+    }
+
+    button { font: inherit; }
+
+    .quiz-shell {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 560px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 2px 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -.03em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      font-size: 18px;
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .theme-toggle:hover { transform: translateY(-1px); border-color: var(--accent); }
+
+    .card {
+      overflow: hidden;
+      padding: clamp(24px, 6vw, 42px);
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, .5);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      animation: card-in .55s cubic-bezier(.2, .8, .2, 1) both;
+    }
+    [data-theme="dark"] .card { border-color: rgba(255,255,255,.07); }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, p { margin-top: 0; }
+    h1, h2 {
+      font-family: "Space Grotesk", "DM Sans", sans-serif;
+      letter-spacing: -.045em;
+    }
+
+    #page-title {
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      gap: 12px;
+      max-width: 430px;
+      margin-bottom: 12px;
+      padding: 17px 19px 19px;
+      overflow: hidden;
+      color: var(--ink);
+      background-color: var(--display-fill);
+      background-image:
+        linear-gradient(var(--display-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--display-grid) 1px, transparent 1px),
+        radial-gradient(ellipse at 92% 8%, var(--display-glow), transparent 48%);
+      background-size: 22px 22px, 22px 22px, auto;
+      border: 1px solid var(--display-border);
+      border-radius: 17px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .48), 0 8px 22px rgba(36, 82, 124, .07);
+      font-size: clamp(33px, 7.5vw, 46px);
+      line-height: 1.08;
+    }
+
+    #page-title::after {
+      position: absolute;
+      z-index: -1;
+      top: 9px;
+      right: 9px;
+      width: 10px;
+      height: 10px;
+      border-top: 1px solid var(--display-accent);
+      border-right: 1px solid var(--display-accent);
+      content: "";
+      opacity: .7;
+    }
+
+    .display-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--display-accent);
+      font-family: "DM Sans", ui-sans-serif, sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .display-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .display-led {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      background: var(--display-accent);
+      border-radius: 50%;
+      box-shadow: 0 0 9px var(--display-glow);
+      animation: signal-pulse 1.8s ease-in-out infinite;
+    }
+
+    .display-title {
+      position: relative;
+      z-index: 1;
+    }
+
+    .intro {
+      margin-bottom: 26px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 11px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .score-pill {
+      padding: 7px 11px;
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      margin-bottom: 28px;
+      overflow: hidden;
+      background: var(--line);
+      border-radius: 99px;
+    }
+
+    .progress-fill {
+      width: 10%;
+      height: 100%;
+      background: linear-gradient(90deg, #8b70f4, #ff91be);
+      border-radius: inherit;
+      transition: width .45s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .question-number {
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin-bottom: 22px;
+      font-size: clamp(22px, 5vw, 28px);
+      line-height: 1.3;
+    }
+
+    .answers { display: grid; gap: 11px; }
+
+    .answer {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      width: 100%;
+      padding: 14px 15px;
+      color: var(--ink);
+      text-align: left;
+      background: var(--card-solid);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.45;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .answer:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 7px 18px rgba(115, 87, 232, .11);
+    }
+    .answer:focus-visible, .primary-button:focus-visible, .theme-toggle:focus-visible {
+      outline: 3px solid rgba(115, 87, 232, .35);
+      outline-offset: 3px;
+    }
+
+    .answer-letter {
+      display: grid;
+      flex: 0 0 30px;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      color: var(--muted);
+      background: var(--page);
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .answer.correct {
+      color: var(--correct);
+      background: var(--correct-bg);
+      border-color: var(--correct);
+      animation: answer-pop .36s ease;
+    }
+    .answer.incorrect {
+      color: var(--wrong);
+      background: var(--wrong-bg);
+      border-color: var(--wrong);
+      animation: shake .38s ease;
+    }
+    .answer.correct .answer-letter { color: var(--correct); background: rgba(255,255,255,.55); }
+    .answer.incorrect .answer-letter { color: var(--wrong); background: rgba(255,255,255,.55); }
+    .answer:disabled { cursor: default; }
+
+    .feedback {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-height: 0;
+      margin-top: 17px;
+      padding: 0;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      opacity: 0;
+      transform: translateY(7px);
+      transition: opacity .25s ease, transform .25s ease, padding .25s ease;
+    }
+    .feedback.visible { padding: 13px 15px; opacity: 1; transform: translateY(0); }
+    .feedback.good { color: var(--correct); background: var(--correct-bg); }
+    .feedback.bad { color: var(--wrong); background: var(--wrong-bg); }
+    .feedback-emoji { font-size: 19px; line-height: 1.1; }
+    .feedback strong { display: block; margin-bottom: 2px; }
+
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .gentle-hint { margin: 0; color: var(--muted); font-size: 11px; }
+
+    .primary-button {
+      min-width: 124px;
+      padding: 12px 18px;
+      color: #fff;
+      background: linear-gradient(135deg, #8065ee, #684bd9);
+      border: 0;
+      border-radius: 13px;
+      box-shadow: 0 8px 17px rgba(105, 78, 219, .22);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+    .primary-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 11px 22px rgba(105, 78, 219, .3); }
+    .primary-button:disabled { cursor: not-allowed; opacity: .48; box-shadow: none; }
+
+    .result {
+      padding: 12px 0 4px;
+      text-align: center;
+      animation: card-in .45s ease both;
+    }
+    .result-emoji {
+      display: grid;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 21px;
+      place-items: center;
+      background: var(--accent-soft);
+      border-radius: 32px;
+      font-size: 52px;
+      animation: float 2.4s ease-in-out infinite;
+    }
+    .result h2 { margin-bottom: 10px; font-size: 32px; }
+    .result p { color: var(--muted); font-size: 14px; line-height: 1.65; }
+    .result-score {
+      margin: 23px 0;
+      color: var(--accent);
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -.06em;
+    }
+    .result-score span { color: var(--muted); font-size: 18px; letter-spacing: 0; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes card-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes answer-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.015); } }
+    @keyframes shake { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-7px) rotate(3deg); } }
+    @keyframes signal-pulse { 50% { opacity: .45; box-shadow: 0 0 2px var(--display-glow); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+    @media (max-width: 420px) {
+      body { padding: 26px 14px; }
+      .card { border-radius: 23px; }
+      .gentle-hint { max-width: 125px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="quiz-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">🪐</span> Orbit Academy</div>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme">
+        <span id="theme-icon" aria-hidden="true">🌙</span><span id="theme-label">Dark mode</span>
+      </button>
+    </header>
+
+    <section class="card" aria-labelledby="page-title">
+      <div id="quiz-view">
+        <p class="eyebrow">Your cosmic mini-mission</p>
+        <h1 id="page-title">
+          <span class="display-topline" aria-hidden="true">
+            <span class="display-status"><span class="display-led"></span>Mission control</span>
+            <span>Briefing 01</span>
+          </span>
+          <span class="display-title">How well do you know space?</span>
+        </h1>
+        <p class="intro">Ten questions, one tiny step for your brain. Pick an answer and see where your curiosity takes you. 🚀</p>
+
+        <div class="meta-row">
+          <span id="question-count">Question 1 of 10</span>
+          <span class="score-pill" id="score-counter" aria-live="polite">⭐ Score: 0</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div id="question-area">
+          <p class="question-number" id="question-number">Question 01</p>
+          <h2 id="question-text"></h2>
+          <div class="answers" id="answers" role="group" aria-labelledby="question-text"></div>
+          <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+          <div class="footer-row">
+            <p class="gentle-hint">Trust your inner astronaut ✨</p>
+            <button class="primary-button" id="next-button" type="button" disabled>Choose an answer</button>
+          </div>
+        </div>
+      </div>
+      <div id="result-view" hidden></div>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        question: "Which planet is known as the Red Planet?",
+        answers: ["Venus", "Mars", "Jupiter", "Mercury"],
+        correct: 1,
+        explanation: "Mars looks rusty red because iron-rich dust covers much of its surface."
+      },
+      {
+        question: "What is the name of the galaxy we call home?",
+        answers: ["Andromeda", "Whirlpool Galaxy", "The Milky Way", "Sombrero Galaxy"],
+        correct: 2,
+        explanation: "Our Solar System lives in the Milky Way, a barred spiral galaxy."
+      },
+      {
+        question: "Which was the first artificial satellite to orbit Earth?",
+        answers: ["Apollo 11", "Voyager 1", "Sputnik 1", "Hubble"],
+        correct: 2,
+        explanation: "The Soviet Union launched Sputnik 1 in 1957, beginning the space age."
+      },
+      {
+        question: "What is the largest planet in our Solar System?",
+        answers: ["Saturn", "Neptune", "Earth", "Jupiter"],
+        correct: 3,
+        explanation: "Jupiter is so enormous that more than 1,300 Earths could fit inside it."
+      },
+      {
+        question: "Which planet has the most prominent ring system?",
+        answers: ["Saturn", "Mars", "Uranus", "Venus"],
+        correct: 0,
+        explanation: "Saturn's bright rings are made mostly of countless pieces of ice and rock."
+      },
+      {
+        question: "What was the name of the first human to walk on the Moon?",
+        answers: ["Yuri Gagarin", "Buzz Aldrin", "Neil Armstrong", "John Glenn"],
+        correct: 2,
+        explanation: "Neil Armstrong stepped onto the Moon during Apollo 11 in July 1969."
+      },
+      {
+        question: "What is the name of NASA's famous space telescope launched in 1990?",
+        answers: ["Kepler", "Hubble", "Chandra", "Spitzer"],
+        correct: 1,
+        explanation: "The Hubble Space Telescope has captured breathtaking views of the universe for decades."
+      },
+      {
+        question: "Which planet is closest to the Sun?",
+        answers: ["Earth", "Venus", "Mercury", "Mars"],
+        correct: 2,
+        explanation: "Speedy Mercury zips around the Sun in just 88 Earth days."
+      },
+      {
+        question: "What is the name of the force that keeps planets in orbit around the Sun?",
+        answers: ["Magnetism", "Gravity", "Friction", "Solar wind"],
+        correct: 1,
+        explanation: "The Sun's gravity pulls on the planets and keeps them moving in their orbits."
+      },
+      {
+        question: "Which space agency landed the Perseverance rover on Mars in 2021?",
+        answers: ["ESA", "JAXA", "NASA", "ISRO"],
+        correct: 2,
+        explanation: "NASA's Perseverance rover is exploring Jezero Crater and searching for signs of ancient life."
+      }
+    ];
+
+    const questionCount = document.getElementById("question-count");
+    const progressTrack = document.querySelector('[role="progressbar"]');
+    const progressFill = document.getElementById("progress-fill");
+    const questionNumber = document.getElementById("question-number");
+    const questionText = document.getElementById("question-text");
+    const answersElement = document.getElementById("answers");
+    const feedbackElement = document.getElementById("feedback");
+    const scoreCounter = document.getElementById("score-counter");
+    const nextButton = document.getElementById("next-button");
+    const quizView = document.getElementById("quiz-view");
+    const resultView = document.getElementById("result-view");
+    const themeToggle = document.getElementById("theme-toggle");
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    function showQuestion() {
+      const item = questions[currentQuestion];
+      questionCount.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      questionNumber.textContent = `Question ${String(currentQuestion + 1).padStart(2, "0")}`;
+      questionText.textContent = item.question;
+      progressTrack.setAttribute("aria-valuenow", currentQuestion);
+      progressFill.style.width = `${(currentQuestion / questions.length) * 100}%`;
+      feedbackElement.className = "feedback";
+      feedbackElement.innerHTML = "";
+      answered = false;
+      nextButton.disabled = true;
+      nextButton.textContent = "Choose an answer";
+      answersElement.replaceChildren();
+
+      item.answers.forEach((answer, index) => {
+        const button = document.createElement("button");
+        button.className = "answer";
+        button.type = "button";
+        button.innerHTML = `<span class="answer-letter">${String.fromCharCode(65 + index)}</span><span>${answer}</span>`;
+        button.addEventListener("click", () => selectAnswer(index));
+        answersElement.append(button);
+      });
+    }
+
+    function selectAnswer(selectedIndex) {
+      if (answered) return;
+      answered = true;
+      const item = questions[currentQuestion];
+      const isCorrect = selectedIndex === item.correct;
+      if (isCorrect) score += 1;
+      scoreCounter.textContent = `⭐ Score: ${score}`;
+
+      [...answersElement.children].forEach((button, index) => {
+        button.disabled = true;
+        if (index === item.correct) button.classList.add("correct");
+        if (index === selectedIndex && !isCorrect) button.classList.add("incorrect");
+      });
+
+      feedbackElement.className = `feedback visible ${isCorrect ? "good" : "bad"}`;
+      feedbackElement.innerHTML = `<span class="feedback-emoji" aria-hidden="true">${isCorrect ? "🎉" : "🫣"}</span><span><strong>${isCorrect ? "Stellar! That's right!" : "Not quite — keep exploring!"}</strong>${item.explanation}</span>`;
+      nextButton.disabled = false;
+      nextButton.textContent = currentQuestion === questions.length - 1 ? "See my score" : "Next question →";
+    }
+
+    function showResults() {
+      quizView.hidden = true;
+      resultView.hidden = false;
+      progressTrack.setAttribute("aria-valuenow", questions.length);
+      progressFill.style.width = "100%";
+
+      let emoji = "🌟";
+      let headline = "A bright beginning!";
+      let message = "Every great explorer starts with a little curiosity. Ready for another orbit?";
+      if (score === questions.length) {
+        emoji = "🏆";
+        headline = "Out of this world!";
+        message = "A perfect flight! You're a true space exploration superstar.";
+      } else if (score >= 7) {
+        emoji = "🚀";
+        headline = "Cosmic explorer!";
+        message = "Your space knowledge is soaring. The universe has a new expert.";
+      } else if (score >= 4) {
+        emoji = "🪐";
+        headline = "Nice orbit!";
+        message = "You've got a great start. A few more discoveries and you'll be stellar.";
+      }
+
+      resultView.innerHTML = `
+        <div class="result">
+          <div class="result-emoji" aria-hidden="true">${emoji}</div>
+          <p class="eyebrow">Mission complete</p>
+          <h2>${headline}</h2>
+          <p>${message}</p>
+          <div class="result-score" aria-label="Your score: ${score} out of ${questions.length}">${score}<span> / ${questions.length}</span></div>
+          <button class="primary-button" id="restart-button" type="button">Play again ↻</button>
+        </div>`;
+      document.getElementById("restart-button").addEventListener("click", restartQuiz);
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      scoreCounter.textContent = "⭐ Score: 0";
+      resultView.hidden = true;
+      quizView.hidden = false;
+      showQuestion();
+    }
+
+    nextButton.addEventListener("click", () => {
+      if (!answered) return;
+      if (currentQuestion === questions.length - 1) {
+        showResults();
+      } else {
+        currentQuestion += 1;
+        showQuestion();
+      }
+    });
+
+    function setTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      const isDark = theme === "dark";
+      document.getElementById("theme-icon").textContent = isDark ? "☀️" : "🌙";
+      document.getElementById("theme-label").textContent = isDark ? "Light mode" : "Dark mode";
+      themeToggle.setAttribute("aria-label", `Switch to ${isDark ? "light" : "dark"} theme`);
+    }
+
+    const savedTheme = localStorage.getItem("orbit-theme");
+    const systemPrefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(savedTheme || (systemPrefersDark ? "dark" : "light"));
+    themeToggle.addEventListener("click", () => {
+      const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      setTheme(theme);
+      localStorage.setItem("orbit-theme", theme);
+    });
+
+    showQuestion();
+  </script>
+</body>
+</html>
